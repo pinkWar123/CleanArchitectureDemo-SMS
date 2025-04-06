@@ -1,0 +1,97 @@
+@page "/students"
+@rendermode InteractiveServer
+@using MediatR
+@using Application.Features.Students.Commands.CreateStudent
+@using Domain.Entities.Students
+@inject IMediator Mediator
+
+<h3>Student List</h3>
+
+<button class="btn btn-primary mb-3" @onclick="OpenModal">Create Student</button>
+
+@if (students == null)
+{
+    <p>Loading students...</p>
+}
+else if (!students.Any())
+{
+    <p>No students found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Faculty</th>
+                <th>Status</th>
+                <th>Learning program</th>
+                <th>Address</th>
+                <th>Phone number</th>
+                <!-- Add additional columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in students)
+            {
+                <tr>
+                    <td>@student.StudentId.Value</td>
+                    <td>@(student?.Name?.Value ?? "")</td>
+                    <td>@(student?.Faculty?.Name?.Value ?? "")</td>
+                    <td>@(student?.Status?.Name?.Value ?? "")</td>
+                    <td>@(student?.LearningProgram?.Name?.Value ?? "")</td>
+                    <td>@(student?.Address?.ToString() ?? "")</td>
+                    <td>@(student?.PhoneNumber?.Value ?? "")</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<!-- Include the modal component -->
+<CreateStudentModal @ref="createStudentModal" OnStudentCreated="OnStudentCreated" />
+
+@code {
+    private List<Student> students;
+    private string errorMessage;
+    private CreateStudentModal createStudentModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudents();
+    }
+
+    private async Task LoadStudents()
+    {
+        // For demonstration, using MediatR query or an HttpClient call to load students.
+        // Replace this with your actual student loading logic.
+        var queryResult = await Mediator.Send(new Application.Features.Students.Queries.FindStudents.FindStudentsQuery());
+        if (queryResult.IsSuccess)
+        {
+            students = queryResult.Value.ToList();
+        }
+        else
+        {
+            errorMessage = $"Error: {queryResult.Error}";
+            students = new List<Student>();
+        }
+    }
+
+    private async Task OpenModal()
+    {
+        await createStudentModal.ShowAsync();
+    }
+
+    private async Task OnStudentCreated(Student newStudent)
+    {
+        // Optionally, refresh the student list after creation.
+        await LoadStudents();
+    }
+}

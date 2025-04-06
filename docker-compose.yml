@@ -1,0 +1,42 @@
+services:
+  #   mongodb:
+  #     image: mongo:latest
+  #     container_name: duolingolite_mongodb
+  #     environment:
+  #       - MONGO_INITDB_ROOT_USERNAME=root
+  #       - MONGO_INITDB_ROOT_PASSWORD=thanh2004
+  #       - MONGO_INITDB_DATABASE=DuolingoLite
+  #     ports:
+  #       - "27018:27017"
+  #     volumes:
+  #       - mongodb_data:/data/db
+
+  # volumes:
+  #   mongodb_data:
+  postgres:
+    image: postgres:latest
+    container_name: duolingolite_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=thanh2004
+      - POSTGRES_DB=DuolingoLite
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+#   sqlserver:
+#     image: mcr.microsoft.com/mssql/server:2019-latest
+#     container_name: duolingolite_sqlserver
+#     environment:
+#       - ACCEPT_EULA=Y
+#       - SA_PASSWORD=YourStrong!Passw0rd
+#       - MSSQL_PID=Express
+#     ports:
+#       - "1433:1433"
+#     volumes:
+#       - sqlserver_data:/var/opt/mssql
+# volumes:
+#   sqlserver_data:

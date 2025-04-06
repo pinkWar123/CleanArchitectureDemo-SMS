@@ -1,0 +1,193 @@
+@page "/create-student"
+@using MediatR
+@using Application.Features.Students.Commands.CreateStudent
+@using BlazorServer.Contracts
+@using BlazorServer.Extensions
+@using Domain.Entities.Students
+@using Domain.Entities.Students.Enums;
+@using Domain.Entities.Statuses;
+@using Domain.Entities.LearningPrograms;
+@using Domain.Entities.Faculties;
+@using Application.Features.Statuses.Queries.GetStatuses;
+@using Application.Features.LearningPrograms.Queries.GetLearningPrograms;
+@using Application.Features.Faculties.Queries.GetFaculties;
+@inject IMediator Mediator
+@inject IJSRuntime JS
+
+<h3>Create Student</h3>
+
+<EditForm Model="@studentVm" FormName="CreateStudent">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Student ID</label>
+        <InputText @bind-Value="studentVm.StudentId" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Name</label>
+        <InputText @bind-Value="studentVm.Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Date of Birth</label>
+        <InputDate @bind-Value="studentVm.DateObBirth" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Gender</label>
+        <InputSelect @bind-Value="studentVm.Gender" class="form-control">
+            <option value="">Select Gender</option>
+            @foreach (var gender in Enum.GetValues(typeof(Gender)))
+            {
+                <option value="@gender">@gender</option>
+            }
+        </InputSelect>
+    </div>
+    <div class="form-group">
+        <label>Faculty</label>
+        <InputSelect @bind-Value="studentVm.FacultyId" class="form-control">
+            <option value="">Select Faculty</option>
+            @foreach (var faculty in faculties)
+            {
+                <option value="@faculty.Id">@faculty.Name.Value</option>
+            }
+        </InputSelect>
+    </div>
+    <div class="form-group">
+        <label>Learning Program</label>
+        <InputSelect @bind-Value="studentVm.ProgramId" class="form-control">
+            <option value="">Select Program</option>
+            @foreach (var program in programs)
+            {
+                <option value="@program.Id">@program.Name.Value</option>
+            }
+        </InputSelect>
+    </div>
+    <div class="form-group">
+        <label>Status</label>
+        <InputSelect @bind-Value="studentVm.StatusId" class="form-control">
+            <option value="">Select Status</option>
+            @foreach (var status in statuses)
+            {
+                <option value="@status.Id">@status.Name.Value</option>
+            }
+        </InputSelect>
+    </div>
+    <div class="form-group">
+        <label>Address</label>
+        <InputText @bind-Value="studentVm.Address" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Email</label>
+        <InputText @bind-Value="studentVm.Email" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Phone Number</label>
+        <InputText @bind-Value="studentVm.PhoneNumber" class="form-control" />
+    </div>
+
+
+
+</EditForm>
+    <button @onclick="CreateStudent" class="btn btn-primary">Create</button>
+
+    
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info">@message</div>
+    
+}
+
+@code {
+    // View model used for data binding in the UI.
+    private CreateStudentViewModel studentVm = new CreateStudentViewModel();
+    private string message;
+
+    private List<Faculty> faculties = new();
+    private List<LearningProgram> programs = new();
+    private List<Status> statuses = new();
+
+    
+    [Parameter]
+    public EventCallback<Student> OnStudentCreated { get; set; }
+
+    // Public method to show the modal.
+
+    protected override async Task OnInitializedAsync()
+    {
+        @* await JS.InvokeVoidAsync("console.log", "Hello"); *@
+
+        // Load faculties
+        var facultyResult = await Mediator.Send(new GetFacultiesQuery());
+        if (facultyResult.IsSuccess)
+            faculties = facultyResult.Value.ToList();
+        else
+            message = $"Error loading faculties: {facultyResult.Error}";
+        Console.WriteLine(faculties.Count);
+        // Load learning programs
+        var programResult = await Mediator.Send(new GetLearningProgramsQuery());
+        if (programResult.IsSuccess)
+            programs = programResult.Value.ToList();
+        else
+            message = $"Error loading programs: {programResult.Error}";
+
+        // Load statuses
+        var statusResult = await Mediator.Send(new GetStatusesQuery());
+        if (statusResult.IsSuccess)
+            statuses = statusResult.Value.ToList();
+        else
+            message = $"Error loading statuses: {statusResult.Error}";
+    }
+    public async Task ShowAsync()
+    {
+        // Reset the view model and clear any error messages.
+        studentVm = new CreateStudentViewModel();
+        message = string.Empty;
+        // This assumes you have a modal with the ID "createStudentModal" in your markup.
+        @* await JS.InvokeVoidAsync("eval", "$('#createStudentModal').modal('show')"); *@
+    }
+
+    // Optional: method to close the modal.
+    private async Task CloseModal()
+    {
+        @* await JS.InvokeVoidAsync("eval", "$('#createStudentModal').modal('hide')"); *@
+    }
+
+    // Method that handles the form submission.
+    private async Task CreateStudent()
+    {
+        Console.WriteLine("Create student...");
+        // Map the mutable view model to your immutable CreateStudentDto.
+        var dto = new CreateStudentDto(
+            studentVm.StudentId,
+            studentVm.Name,
+            studentVm.DateObBirth.ToUniversalTime(),
+            studentVm.Gender,
+            studentVm.FacultyId,
+            studentVm.Address,
+            studentVm.Email,
+            studentVm.PhoneNumber,
+            studentVm.ProgramId,
+            studentVm.StatusId
+        );
+        Console.WriteLine(dto);
+        // Create the command using the DTO.
+        var command = new CreateStudentCommand(dto);
+
+        // Dispatch the command via MediatR.
+        var result = await Mediator.Send(command);
+
+        // Update the message based on the result.
+        if (result.IsSuccess)
+        {
+            // Access the underlying value of the StudentId value object.
+            message = $"Successfully created student with id {result.Value.StudentId.Value}";
+            await OnStudentCreated.InvokeAsync(result.Value);
+            await CloseModal();
+        }
+        else
+        {
+            message = $"Error: {result.Error}";
+        }
+        Console.WriteLine(message);
+    }
+}

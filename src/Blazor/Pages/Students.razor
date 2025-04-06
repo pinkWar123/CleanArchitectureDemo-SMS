@@ -1,0 +1,68 @@
+@page "/students"
+@using MediatR
+@using Application.Features.Students.Queries.FindStudents;
+@using Domain.Entities.Students;
+@inject IMediator Mediator
+
+<h3>Student List</h3>
+
+@if (students == null)
+{
+    <p>Loading students...</p>
+}
+else if (!students.Any())
+{
+    <p>No students found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <!-- Add additional columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in students)
+            {
+                <tr>
+                    <td>@student.StudentId.Value</td>
+                    <td>@student.Name.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private List<Student> students;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("Fetching students...");
+        var result = await Mediator.Send(new FindStudentsQuery());
+
+        // Using an if/else approach to handle the result.
+        if (result.IsSuccess)
+        {
+            // Assuming result.Value is IEnumerable<StudentDto>
+            students = result.Value.ToList();
+        }
+        else
+        {
+            errorMessage = $"Error: {result.Error}";
+            students = new List<Student>();
+        }
+        Console.WriteLine("Finished fetching students...");
+
+    }
+}
+    

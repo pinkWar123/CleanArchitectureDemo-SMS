@@ -1,0 +1,10 @@
+@page "/test"
+@rendermode InteractiveServer
+<button @onclick="CreateStudent" class="btn btn-primary">Create</button>
+
+@code {
+    private void CreateStudent()
+    {
+        Console.WriteLine("CreateStudent called!");
+    }
+}

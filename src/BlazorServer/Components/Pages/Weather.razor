@@ -1,0 +1,12 @@
+﻿@page "/weather"
+@attribute [StreamRendering]
+
+<button @onclick="CreateStudent" class="btn btn-primary">Create</button>
+
+@code {
+    private async Task CreateStudent()
+    {
+        Console.WriteLine("CreateStudent called!");
+        await Task.CompletedTask;
+    }
+}
