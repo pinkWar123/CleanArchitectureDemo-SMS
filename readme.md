@@ -23,7 +23,7 @@ The project is built following the principles of Clean Architecture and is divid
 
 ### Prerequisites
 
-- [.NET 6 SDK (or later)](https://dotnet.microsoft.com/download)
+- [.NET 8 SDK (or later)](https://dotnet.microsoft.com/download)
 - A suitable IDE or code editor (e.g., Visual Studio, VS Code)
 
 ### Installation
@@ -65,3 +65,9 @@ Then, depending on what you want to see:
    cd BlazorServer
    dotnet watch run
    ```
+
+## Contributors
+
+- **Ho Chi Minh University of Social Science**
+- **22127345 - Nguyễn Hồng Quân**
+- **22127389 - Nguyễn Phúc Thành**
